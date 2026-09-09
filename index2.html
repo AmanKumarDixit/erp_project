@@ -1,0 +1,1262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PSIT Kanpur - Cyber ERP & Interactive 3D Map</title>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Leaflet OpenStreetMap CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        :root {
+            --bg-dark: #05070a;
+            --card-bg: rgba(13, 18, 30, 0.92);
+            --card-border: rgba(0, 242, 254, 0.3);
+            --accent-cyan: #00f2fe;
+            --accent-blue: #4facfe;
+            --accent-pink: #ff2a85;
+            --accent-green: #10b981;
+            --text-main: #f1f5f9;
+            --text-muted: #94a3b8;
+            --glow-shadow: 0 0 25px rgba(0, 242, 254, 0.25);
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            min-height: 100vh;
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(0, 242, 254, 0.08) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(255, 42, 133, 0.05) 0%, transparent 40%);
+        }
+
+        .hidden { display: none !important; }
+
+        /* LOGIN PORTAL */
+        .login-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .login-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--card-border);
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: var(--glow-shadow);
+            width: 100%;
+            max-width: 420px;
+            text-align: center;
+        }
+
+        .brand-title {
+            font-size: 1.8rem;
+            font-weight: 800;
+            letter-spacing: 2px;
+            margin-bottom: 5px;
+            background: linear-gradient(135deg, #fff, var(--accent-cyan));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 16px;
+            background: rgba(5, 7, 10, 0.8);
+            border: 1px solid var(--card-border);
+            color: var(--text-main);
+            border-radius: 8px;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        .form-group input:focus {
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 12px rgba(0, 242, 254, 0.4);
+        }
+
+        .btn-primary {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan));
+            color: #000;
+            font-weight: 700;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .btn-primary:hover {
+            box-shadow: 0 0 20px rgba(0, 242, 254, 0.6);
+            transform: translateY(-2px);
+        }
+
+        /* MAIN DASHBOARD LAYOUT */
+        .dashboard-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 260px;
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            border-right: 1px solid var(--card-border);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-header {
+            padding: 25px 20px;
+            border-bottom: 1px solid var(--card-border);
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            padding: 20px 10px;
+            flex-grow: 1;
+        }
+
+        .sidebar-menu li {
+            margin-bottom: 8px;
+        }
+
+        .sidebar-menu li a {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 12px 16px;
+            color: var(--text-muted);
+            text-decoration: none;
+            border-radius: 8px;
+            transition: 0.3s;
+        }
+
+        .sidebar-menu li.active a, .sidebar-menu li a:hover {
+            background: rgba(0, 242, 254, 0.1);
+            color: var(--accent-cyan);
+            border: 1px solid rgba(0, 242, 254, 0.4);
+        }
+
+        .logout-btn {
+            padding: 20px;
+            border-top: 1px solid var(--card-border);
+            color: #ff4d4d;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .main-content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .top-navbar {
+            background: var(--card-bg);
+            border-bottom: 1px solid var(--card-border);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .user-card {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .avatar {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan));
+            color: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .content-body {
+            padding: 25px;
+            overflow-y: auto;
+        }
+
+        .section-header {
+            margin-bottom: 20px;
+            font-size: 1.4rem;
+            color: var(--text-main);
+            border-left: 4px solid var(--accent-cyan);
+            padding-left: 12px;
+        }
+
+        /* TIMETABLE STYLES */
+        .filter-bar {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            padding: 16px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-batch {
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--card-border);
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .btn-batch.active, .btn-batch:hover {
+            background: var(--accent-blue);
+            color: #000;
+            border-color: var(--accent-blue);
+            font-weight: bold;
+        }
+
+        .select-dark {
+            background: rgba(5, 7, 10, 0.8);
+            border: 1px solid var(--card-border);
+            color: var(--text-main);
+            padding: 8px 12px;
+            border-radius: 8px;
+            outline: none;
+            font-size: 0.85rem;
+        }
+
+        .timetable-wrapper {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            overflow-x: auto;
+        }
+
+        .timetable-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 800px;
+        }
+
+        .timetable-table th, .timetable-table td {
+            padding: 14px;
+            text-align: left;
+            border: 1px solid var(--card-border);
+        }
+
+        .timetable-table th {
+            background: rgba(0, 242, 254, 0.05);
+            color: var(--accent-cyan);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+        }
+
+        .slot-title {
+            color: var(--accent-blue);
+            font-weight: bold;
+            font-size: 0.9rem;
+            margin-bottom: 2px;
+        }
+
+        .slot-teacher {
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            margin-bottom: 6px;
+        }
+
+        .room-badge {
+            display: inline-block;
+            font-size: 0.65rem;
+            font-weight: bold;
+            padding: 2px 6px;
+            background: rgba(0, 242, 254, 0.1);
+            color: var(--accent-cyan);
+            border: 1px solid rgba(0, 242, 254, 0.3);
+            border-radius: 4px;
+        }
+
+        .empty-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 50px;
+            text-align: center;
+        }
+
+        /* MAP & WAYFINDING STYLES */
+        .route-builder {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 15px 20px;
+            margin-bottom: 15px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .route-controls {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .map-wrapper {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 20px;
+            height: 560px;
+        }
+
+        .map-sidebar {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            overflow-y: auto;
+            max-height: 560px;
+        }
+
+        .location-item {
+            padding: 10px 12px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .location-item:hover {
+            background: rgba(0, 242, 254, 0.1);
+            border-color: var(--accent-cyan);
+        }
+
+        #map, #container-3d {
+            width: 100%;
+            height: 560px;
+            border-radius: 12px;
+            border: 1px solid var(--card-border);
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Custom Leaflet Map Pins */
+        .leaflet-marker-icon.custom-cyber-pin {
+            background: rgba(5, 7, 10, 0.95);
+            border: 1.5px solid var(--accent-cyan);
+            color: var(--accent-cyan);
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 0.72rem;
+            white-space: nowrap;
+            box-shadow: 0 0 12px rgba(0, 242, 254, 0.6);
+            text-align: center;
+        }
+
+        /* 3D INTERACTIVE POPUP MODAL CARD */
+        .block-info-modal {
+            position: absolute;
+            bottom: 25px;
+            right: 25px;
+            width: 340px;
+            background: rgba(8, 12, 22, 0.96);
+            border: 1px solid var(--accent-cyan);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 0 35px rgba(0, 242, 254, 0.35);
+            backdrop-filter: blur(16px);
+            z-index: 1000;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .block-info-modal h3 {
+            color: var(--accent-cyan);
+            font-size: 1.15rem;
+            margin-bottom: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .floor-detail {
+            margin-top: 10px;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.03);
+            border-left: 3px solid var(--accent-blue);
+            border-radius: 6px;
+            font-size: 0.8rem;
+        }
+
+        .floor-detail strong {
+            color: var(--accent-cyan);
+            display: block;
+            margin-bottom: 2px;
+        }
+
+        /* AI CHAT STYLES */
+        .ai-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 20px;
+        }
+
+        .ai-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            height: 420px;
+        }
+
+        .ai-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        .ai-header i {
+            font-size: 1.8rem;
+            color: var(--accent-cyan);
+        }
+
+        .chat-box {
+            flex-grow: 1;
+            background: rgba(5, 7, 10, 0.6);
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            padding: 12px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 12px;
+            font-size: 0.85rem;
+        }
+
+        .msg-input-group {
+            display: flex;
+            gap: 8px;
+        }
+
+        .msg-input-group input {
+            flex-grow: 1;
+            padding: 10px;
+            background: rgba(5, 7, 10, 0.8);
+            border: 1px solid var(--card-border);
+            color: #fff;
+            border-radius: 6px;
+            outline: none;
+        }
+
+        .msg-input-group button {
+            padding: 10px 18px;
+            background: var(--accent-cyan);
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        @media(max-width: 850px) {
+            .map-wrapper { grid-template-columns: 1fr; height: auto; }
+            #map, #container-3d { height: 400px; }
+            .dashboard-container { flex-direction: column; }
+            .sidebar { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 1. LOGIN PORTAL -->
+    <div id="login-portal" class="login-wrapper">
+        <div class="login-card">
+            <div class="brand-title">PSIT KANPUR</div>
+            <p style="color:var(--text-muted); margin-bottom:25px; font-size: 0.9rem;">Pranveer Singh Institute of Technology</p>
+            <form id="login-form" onsubmit="event.preventDefault(); login();">
+                <div class="form-group">
+                    <label>Registration ID / Roll No</label>
+                    <input type="text" placeholder="e.g. PSIT2026102" required>
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" placeholder="••••••••" required>
+                </div>
+                <button type="submit" class="btn-primary">AUTHENTICATE & ENTER</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 2. MAIN ERP DASHBOARD -->
+    <div id="erp-dashboard" class="dashboard-container hidden">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="brand-title" style="font-size:1.2rem;">PSIT KANPUR</div>
+            </div>
+            <ul class="sidebar-menu">
+                <li class="active" onclick="switchTab('timetable', this)">
+                    <a href="#"><i class="fa-solid fa-calendar-days"></i> Timetable Matrix</a>
+                </li>
+                <li onclick="switchTab('navigation', this)">
+                    <a href="#"><i class="fa-solid fa-map-location-dot"></i> PSIT HD 2D Map</a>
+                </li>
+                <li onclick="switchTab('map-3d', this)">
+                    <a href="#"><i class="fa-solid fa-cubes"></i> Interactive 3D Campus</a>
+                </li>
+                <li onclick="switchTab('ai-agents', this)">
+                    <a href="#"><i class="fa-solid fa-robot"></i> PSIT AI Agent</a>
+                </li>
+            </ul>
+            <div class="logout-btn" onclick="logout()">
+                <i class="fa-solid fa-right-from-bracket"></i> Logout
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="top-navbar">
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <strong>PSIT Campus Hub (Bhauti, Kanpur)</strong>
+                    <span style="font-size:0.75rem; background:rgba(0, 242, 254, 0.1); color:var(--accent-cyan); border:1px solid rgba(0,242,254,0.3); padding:3px 8px; border-radius:12px;">
+                        ⚡ 3D Interactive Blueprint Active
+                    </span>
+                </div>
+                <div class="user-card">
+                    <div class="avatar">PS</div>
+                    <div>
+                        <div style="font-size:0.85rem; font-weight:bold;">Student Console</div>
+                        <div style="font-size:0.7rem; color:var(--text-muted);">CSE / IT Portal</div>
+                    </div>
+                </div>
+            </header>
+
+            <div class="content-body">
+                
+                <!-- SECTION 1: TIMETABLE MATRIX -->
+                <section id="sec-timetable" class="tab-section">
+                    <h2 class="section-header">Weekly Schedule Matrix</h2>
+                    
+                    <div class="filter-bar">
+                        <div class="btn-group">
+                            <button onclick="changeBatch('1')" id="b-1" class="btn-batch">1st Year</button>
+                            <button onclick="changeBatch('2')" id="b-2" class="btn-batch active">2nd Year</button>
+                            <button onclick="changeBatch('3')" id="b-3" class="btn-batch">3rd Year</button>
+                            <button onclick="changeBatch('4')" id="b-4" class="btn-batch">4th Year</button>
+                        </div>
+
+                        <div id="section-selector-wrapper" style="display:flex; align-items:center; gap:10px;">
+                            <label style="font-size:0.8rem; color:var(--text-muted); font-weight:bold; text-transform:uppercase;">SECTION:</label>
+                            <select id="section-select" onchange="updateTimetableView()" class="select-dark">
+                                <!-- Dynamic Sections -->
+                            </select>
+                        </div>
+                    </div>
+
+                    <div id="empty-state" class="empty-card hidden">
+                        <span style="font-size: 3rem; display:block; margin-bottom:10px;">🗓️</span>
+                        <h3 style="font-size:1.2rem; margin-bottom:8px;">Timetable Pending</h3>
+                        <p style="color:var(--text-muted); font-size:0.85rem; max-width:500px; margin:0 auto;">
+                            First-year classes haven't structuralized slots yet. The system will auto-compile their matrix without professor overlaps as soon as sections are assigned.
+                        </p>
+                    </div>
+
+                    <div id="timetable-card" class="timetable-wrapper">
+                        <div style="padding: 15px; border-bottom:1px solid var(--card-border); display:flex; justify-content:space-between; align-items:center;">
+                            <h3 id="table-title" style="color:var(--accent-cyan); font-size:1rem;">Schedule View</h3>
+                            <span style="font-size:0.75rem; color:var(--text-muted);">5 Days • 5 Working Periods/Day</span>
+                        </div>
+                        <table class="timetable-table">
+                            <thead>
+                                <tr>
+                                    <th style="width:120px;">Day</th>
+                                    <th>09:00 - 10:00</th>
+                                    <th>10:00 - 11:00</th>
+                                    <th style="text-align:center; width:50px; color:var(--text-muted);">BREAK</th>
+                                    <th>11:15 - 12:15</th>
+                                    <th>12:15 - 01:15</th>
+                                    <th>02:00 - 03:00</th>
+                                </tr>
+                            </thead>
+                            <tbody id="timetable-body">
+                                <!-- Dynamic slots -->
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- SECTION 2: ENHANCED HD 2D PSIT KANPUR MAP & WAYFINDER -->
+                <section id="sec-navigation" class="tab-section hidden">
+                    <h2 class="section-header">PSIT Kanpur - Interactive Wayfinding & Navigation</h2>
+
+                    <!-- ROUTE BUILDER TOOL BAR -->
+                    <div class="route-builder">
+                        <div class="route-controls">
+                            <i class="fa-solid fa-route" style="color:var(--accent-cyan); font-size:1.2rem;"></i>
+                            <label style="font-size:0.85rem; color:var(--text-muted);">From:</label>
+                            <select id="route-start" class="select-dark">
+                                <!-- Dynamic options -->
+                            </select>
+
+                            <i class="fa-solid fa-arrow-right" style="color:var(--accent-cyan); font-size:0.8rem;"></i>
+
+                            <label style="font-size:0.85rem; color:var(--text-muted);">To:</label>
+                            <select id="route-end" class="select-dark">
+                                <!-- Dynamic options -->
+                            </select>
+
+                            <button onclick="drawCampusRoute()" class="btn-batch active" style="padding:8px 20px;">
+                                <i class="fa-solid fa-diamond-turn-right"></i> Draw Route Path
+                            </button>
+                            <button onclick="clearCampusRoute()" class="btn-batch" style="color:#ff4d4d; border-color:rgba(255,77,77,0.3);">
+                                Clear Route
+                            </button>
+                        </div>
+                        <div id="route-info" style="font-size:0.85rem; color:var(--accent-cyan); font-weight:bold;">
+                            Select start and end blocks to generate pathway.
+                        </div>
+                    </div>
+
+                    <div class="map-wrapper">
+                        <div class="map-sidebar">
+                            <h4 style="color:var(--accent-cyan); margin-bottom:5px;">PSIT Key Blocks</h4>
+                            <div id="2d-location-list">
+                                <!-- Dynamic Location List -->
+                            </div>
+                        </div>
+                        <div id="map"></div>
+                    </div>
+                </section>
+
+                <!-- SECTION 3: 3D CLICKABLE & INTERACTIVE CAMPUS VIEW -->
+                <section id="sec-map-3d" class="tab-section hidden">
+                    <h2 class="section-header">PSIT Interactive 3D Blueprint (Click Any Block)</h2>
+                    <div style="height: 560px; width: 100%; position: relative;">
+                        <div id="container-3d"></div>
+                        
+                        <div style="position: absolute; top: 15px; left: 15px; background: rgba(0,0,0,0.85); padding: 10px 15px; border-radius: 8px; border: 1px solid var(--card-border); font-size: 0.8rem; pointer-events: none; z-index:10;">
+                            <i class="fa-solid fa-hand-pointer" style="color:var(--accent-cyan)"></i> <strong>Click on any 3D Block</strong> to view Floor Details (p12, p21, p31)
+                        </div>
+
+                        <!-- Dynamic Clicked Block Info Panel -->
+                        <div id="block-info-card" class="block-info-modal hidden">
+                            <h3 id="card-block-title">Block Details <i class="fa-solid fa-xmark" style="cursor:pointer; font-size:0.9rem;" onclick="closeBlockModal()"></i></h3>
+                            <p id="card-block-desc" style="font-size:0.75rem; color:var(--text-muted); margin-bottom:10px;">Click details</p>
+                            
+                            <div class="floor-detail">
+                                <strong>Ground Floor (p12):</strong>
+                                <span id="card-p12">CSE Labs & Seminar Hall</span>
+                            </div>
+                            <div class="floor-detail">
+                                <strong>1st Floor (p21):</strong>
+                                <span id="card-p21">IT Classrooms & Faculty Cabins</span>
+                            </div>
+                            <div class="floor-detail">
+                                <strong>2nd Floor (p31):</strong>
+                                <span id="card-p31">AI / ML Specialized Labs</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- SECTION 4: AI AGENT -->
+                <section id="sec-ai-agents" class="tab-section hidden">
+                    <h2 class="section-header">PSIT Campus AI Assistant</h2>
+                    <div class="ai-container">
+                        <div class="ai-card">
+                            <div class="ai-header">
+                                <i class="fa-solid fa-map-pin"></i>
+                                <div>
+                                    <h3>PSIT Location AI</h3>
+                                    <small style="color:var(--text-muted)">Ask 'Where is Block G' or 'Route from Block A to Block J'</small>
+                                </div>
+                            </div>
+                            <div class="chat-box" id="chat-nav">
+                                <div><strong style="color:var(--accent-cyan)">PSIT-BOT:</strong> Hello! Ask me any block location or navigation route in PSIT Kanpur.</div>
+                            </div>
+                            <div class="msg-input-group">
+                                <input type="text" id="input-nav" placeholder="e.g. Find Block G or Route from Block A to Tower..." onkeypress="if(event.key==='Enter') sendNavMsg()">
+                                <button onclick="sendNavMsg()">Search & Pin</button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- EXTERNAL LIBRARIES -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+    <script>
+        // --- 1. TIMETABLE MATRIX ALGORITHM ---
+        const structure = {
+            "1": { sections: 0 },
+            "2": { sections: 15 }, 
+            "3": { sections: 17 }, 
+            "4": { sections: 11 }  
+        };
+
+        const subjects = [
+            { name: "Data Structures", teacher: "Dr. Amit Sharma" },
+            { name: "Web Programming", teacher: "Prof. Rahul Verma" },
+            { name: "Computer Networks", teacher: "Dr. Priya Nair" },
+            { name: "Operating Systems", teacher: "Prof. Vikas Gupta" },
+            { name: "Artificial Intel", teacher: "Dr. Sneha Rao" },
+            { name: "Cyber Security", teacher: "Prof. K. Kiran" }
+        ];
+
+        const workingDays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
+        let selectedYear = "2";
+
+        function changeBatch(yearId) {
+            ["1", "2", "3", "4"].forEach(id => {
+                const btn = document.getElementById(`b-${id}`);
+                if(id === yearId) btn.classList.add('active');
+                else btn.classList.remove('active');
+            });
+
+            selectedYear = yearId;
+            buildDropdownOptions();
+            updateTimetableView();
+        }
+
+        function buildDropdownOptions() {
+            const dropdown = document.getElementById('section-select');
+            const wrapper = document.getElementById('section-selector-wrapper');
+            if(!dropdown || !wrapper) return;
+            dropdown.innerHTML = '';
+            
+            const limit = structure[selectedYear].sections;
+            if(limit === 0) {
+                wrapper.classList.add('hidden');
+                return;
+            }
+            wrapper.classList.remove('hidden');
+
+            for(let i=0; i < limit; i++) {
+                let letter = String.fromCharCode(65 + i);
+                dropdown.innerHTML += `<option value="${i}">Section ${letter}</option>`;
+            }
+        }
+
+        function updateTimetableView() {
+            const body = document.getElementById('timetable-body');
+            const card = document.getElementById('timetable-card');
+            const emptyState = document.getElementById('empty-state');
+            if(!body || !card || !emptyState) return;
+            
+            if(structure[selectedYear].sections === 0) {
+                card.classList.add('hidden');
+                emptyState.classList.remove('hidden');
+                return;
+            }
+
+            card.classList.remove('hidden');
+            emptyState.classList.add('hidden');
+            body.innerHTML = '';
+
+            const sectionIndex = parseInt(document.getElementById('section-select').value) || 0;
+            const currentSectionLetter = String.fromCharCode(65 + sectionIndex);
+            document.getElementById('table-title').innerText = `${selectedYear}rd Year - Section ${currentSectionLetter} Schedule Matrix`;
+
+            workingDays.forEach((day, dayIndex) => {
+                let rowHtml = `<tr><td style="font-weight:bold; background:rgba(0,242,254,0.02);">${day}</td>`;
+
+                for (let period = 0; period < 5; period++) {
+                    if(period === 2) { 
+                        rowHtml += `<td style="text-align:center; font-size:0.65rem; color:var(--text-muted); font-weight:bold; letter-spacing:2px; background:rgba(255,255,255,0.01);">B<br>R<br>E<br>A<br>K</td>`;
+                    }
+
+                    let shiftKey = (parseInt(selectedYear) * 7) + sectionIndex + dayIndex + period;
+                    let selectedSub = subjects[shiftKey % subjects.length];
+
+                    let calculatedFloor = (shiftKey % 3) + 1; 
+                    let calculatedRoomNum = (shiftKey % 4) + 1;
+
+                    rowHtml += `
+                        <td>
+                            <div class="slot-title">${selectedSub.name}</div>
+                            <div class="slot-teacher">${selectedSub.teacher}</div>
+                            <div class="room-badge">
+                                Block ${currentSectionLetter} - Room ${calculatedFloor}0${calculatedRoomNum}
+                            </div>
+                        </td>`;
+                }
+                rowHtml += `</tr>`;
+                body.innerHTML += rowHtml;
+            });
+        }
+
+        // --- 2. COMPLETE PSIT BLUEPRINT DATASET (EXACT TO DIAGRAM) ---
+        const psitLocations = {
+            tower: { key: "tower", lat: 26.449700, lng: 80.192086, name: "PSIT Tower", desc: "Corporate & Public Relations Hub", p12: "p12 - PR Office & Visitor Lounge", p21: "p21 - Corporate Relations & Boardroom", p31: "p31 - Director Office & High-Tech Suites", x: 0, z: -20, w: 16, d: 8, rot: 0, color: 0x00f2fe, height: 7 },
+            admin: { key: "admin", lat: 26.449450, lng: 80.192086, name: "Admin / Town Hall", desc: "Central Administrative Block", p12: "p12 - Student Registrar & Accounts counter", p21: "p21 - Main Town Hall Auditorium & Conference Room", p31: "p31 - Dean Academics & Controller Examination Cell", x: 0, z: -12, w: 14, d: 6, rot: 0, color: 0x4facfe, height: 4.5 },
+            lawn: { key: "lawn", lat: 26.449000, lng: 80.192086, name: "Central Green Lawn", desc: "Main Campus Assembly Ground", p12: "p12 - Open Amphitheatre Lawn & Assembly Ground", p21: "N/A", p31: "N/A", x: 0, z: 2, w: 10, d: 18, rot: 0, color: 0x10b981, height: 0.2 },
+            rangmanch: { key: "rangmanch", lat: 26.448200, lng: 80.192086, name: "Rang Manch", desc: "Open Air Cultural Stage Arena", p12: "p12 - Open Stage Arena & Green Rooms", p21: "p21 - Sound, Light Control Room & VIP Gallery", p31: "p31 - Open Gallery Deck", x: 0, z: 14, w: 10, d: 4, rot: 0, color: 0xff2a85, height: 2 },
+            
+            // LEFT OUTER WING
+            blockG: { key: "blockG", lat: 26.449650, lng: 80.191400, name: "Block G", desc: "Management & MCA Block", p12: "p12 - MBA Seminar Hall G12", p21: "p21 - MCA Classrooms G21", p31: "p31 - E-Cell & Startup Incubator G31", x: -16, z: -19, w: 10, d: 7, rot: 0, color: 0x3b82f6, height: 4 },
+            blockE: { key: "blockE", lat: 26.449400, lng: 80.191400, name: "Block E", desc: "Basic Sciences & Humanities", p12: "p12 - Physics & Chemistry Labs E12", p21: "p21 - Humanities Classrooms E21", p31: "p31 - Communication Skill Lab E31", x: -17, z: -11, w: 7, d: 7, rot: 0, color: 0x4facfe, height: 4 },
+            blockC: { key: "blockC", lat: 26.449200, lng: 80.191400, name: "Block C", desc: "Information Technology Wing", p12: "p12 - IT Web Dev Labs C12", p21: "p21 - Lecture Rooms C21", p31: "p31 - Cyber Security Research Lab C31", x: -17, z: -3, w: 7, d: 7, rot: 0, color: 0x4facfe, height: 4 },
+            blockA: { key: "blockA", lat: 26.449000, lng: 80.191400, name: "Block A", desc: "Computer Science Wing", p12: "p12 - CSE Hardware Labs A12", p21: "p21 - Classrooms A21", p31: "p31 - AI Research Center A31", x: -17, z: 5, w: 7, d: 7, rot: 0, color: 0x4facfe, height: 4 },
+            blockS: { key: "blockS", lat: 26.448600, lng: 80.191400, name: "Block S", desc: "Central Cafeteria & Food Court", p12: "p12 - Main Dining Hall S12", p21: "p21 - Nescafe & Express Lounge S21", p31: "p31 - Executive Dining Zone S31", x: -16, z: 14, w: 10, d: 7, rot: 0, color: 0x3b82f6, height: 4 },
+
+            // LEFT INNER ANGLED BLOCKS (Rotated 45 Deg)
+            blockF: { key: "blockF", lat: 26.449300, lng: 80.191600, name: "Block F", desc: "Mechanical & CAD Labs", p12: "p12 - Auto CAD & Robotics Lab F12", p21: "p21 - Classrooms F21", p31: "p31 - Design Thinking Center F31", x: -9, z: -10, w: 6, d: 8, rot: Math.PI / 4, color: 0x00f2fe, height: 3.5 },
+            blockD: { key: "blockD", lat: 26.449100, lng: 80.191600, name: "Block D", desc: "Electronics & Tech Labs", p12: "p12 - IoT & Embedded Systems Lab D12", p21: "p21 - Classrooms D21", p31: "p31 - Microprocessor Lab D31", x: -9, z: -2, w: 6, d: 8, rot: Math.PI / 4, color: 0x00f2fe, height: 3.5 },
+            blockB: { key: "blockB", lat: 26.448800, lng: 80.191600, name: "Block B", desc: "Software Development Labs", p12: "p12 - Python & Java Coding Labs B12", p21: "p21 - Lecture Rooms B21", p31: "p31 - High-Performance Cloud Lab B31", x: -9, z: 6, w: 6, d: 8, rot: Math.PI / 4, color: 0x00f2fe, height: 3.5 },
+
+            // RIGHT OUTER WING
+            blockJ: { key: "blockJ", lat: 26.449650, lng: 80.192700, name: "Block J", desc: "Pharmacy & Biotech Wing", p12: "p12 - Pharmaceutics Lab J12", p21: "p21 - Biotech Research Lab J21", p31: "p31 - Lecture Halls J31", x: 16, z: -19, w: 10, d: 7, rot: 0, color: 0x8b5cf6, height: 4 },
+            blockK: { key: "blockK", lat: 26.449400, lng: 80.192700, name: "Block K", desc: "Central Library & Digital Hub", p12: "p12 - Reading Hall & Journal Section K12", p21: "p21 - Digital Library & E-Learning K21", p31: "p31 - Book Bank & Silent Zone K31", x: 17, z: -11, w: 7, d: 7, rot: 0, color: 0xa855f7, height: 4 },
+            blockM: { key: "blockM", lat: 26.449200, lng: 80.192700, name: "Block M", desc: "Electrical Engineering Wing", p12: "p12 - Electrical Machines Lab M12", p21: "p21 - Classrooms M21", p31: "p31 - Power Systems Lab M31", x: 17, z: -3, w: 7, d: 7, rot: 0, color: 0xa855f7, height: 4 },
+            blockP: { key: "blockP", lat: 26.449000, lng: 80.192700, name: "Block P", desc: "First Year Engineering Wing", p12: "p12 - Applied Physics Lab P12", p21: "p21 - Classrooms P21", p31: "p31 - Engineering Graphics Lab P31", x: 17, z: 5, w: 7, d: 7, rot: 0, color: 0xa855f7, height: 4 },
+            blockR: { key: "blockR", lat: 26.448600, lng: 80.192700, name: "Block R", desc: "Sports & Amenities Center", p12: "p12 - Indoor Badminton & Table Tennis R12", p21: "p21 - Gymnasium & Fitness Suite R21", p31: "p31 - Student Activity Club R31", x: 16, z: 14, w: 10, d: 7, rot: 0, color: 0x8b5cf6, height: 4 },
+
+            // RIGHT INNER ANGLED BLOCKS (Rotated -45 Deg)
+            blockL: { key: "blockL", lat: 26.449300, lng: 80.192500, name: "Block L", desc: "Advanced Computing Wing", p12: "p12 - Data Science Lab L12", p21: "p21 - Classrooms L21", p31: "p31 - Machine Learning Hub L31", x: 9, z: -10, w: 6, d: 8, rot: -Math.PI / 4, color: 0x00f2fe, height: 3.5 },
+            blockN: { key: "blockN", lat: 26.449100, lng: 80.192500, name: "Block N", desc: "Civil & Structural Labs", p12: "p12 - Surveying & Material Lab N12", p21: "p21 - Classrooms N21", p31: "p31 - CAD Civil Lab N31", x: 9, z: -2, w: 6, d: 8, rot: -Math.PI / 4, color: 0x00f2fe, height: 3.5 },
+            blockQ: { key: "blockQ", lat: 26.448800, lng: 80.192500, name: "Block Q", desc: "Tutorial & Workshop Block", p12: "p12 - Mechanical Workshop Q12", p21: "p21 - Tutorial Rooms Q21", p31: "p31 - Language Lab Q31", x: 9, z: 6, w: 6, d: 8, rot: -Math.PI / 4, color: 0x00f2fe, height: 3.5 }
+        };
+
+        // Populate Route Select Dropdowns
+        function populateRouteDropdowns() {
+            const startSelect = document.getElementById('route-start');
+            const endSelect = document.getElementById('route-end');
+            const list2D = document.getElementById('2d-location-list');
+            if(!startSelect || !endSelect) return;
+
+            startSelect.innerHTML = '';
+            endSelect.innerHTML = '';
+            if(list2D) list2D.innerHTML = '';
+
+            Object.keys(psitLocations).forEach((key, index) => {
+                const loc = psitLocations[key];
+                startSelect.innerHTML += `<option value="${key}">${loc.name}</option>`;
+                endSelect.innerHTML += `<option value="${key}" ${index === 5 ? 'selected' : ''}>${loc.name}</option>`;
+
+                if(list2D) {
+                    list2D.innerHTML += `
+                        <div class="location-item" onclick="flyToLoc('${key}')">
+                            <strong>${loc.name}</strong>
+                            <div style="font-size:0.75rem; color:var(--text-muted);">${loc.desc}</div>
+                        </div>`;
+                }
+            });
+        }
+
+        // --- 3. AUTHENTICATION & NAVIGATION LOGIC ---
+        function login() {
+            document.getElementById('login-portal').classList.add('hidden');
+            document.getElementById('erp-dashboard').classList.remove('hidden');
+            buildDropdownOptions();
+            updateTimetableView();
+            populateRouteDropdowns();
+            init2DMap();
+        }
+
+        function logout() {
+            document.getElementById('erp-dashboard').classList.add('hidden');
+            document.getElementById('login-portal').classList.remove('hidden');
+        }
+
+        function switchTab(tabId, element) {
+            document.querySelectorAll('.sidebar-menu li').forEach(li => li.classList.remove('active'));
+            if(element) element.classList.add('active');
+
+            document.querySelectorAll('.tab-section').forEach(sec => sec.classList.add('hidden'));
+            document.getElementById(`sec-${tabId}`).classList.remove('hidden');
+
+            if(tabId === 'navigation' && map2D) {
+                setTimeout(() => { map2D.invalidateSize(); }, 200);
+            }
+
+            if(tabId === 'map-3d') {
+                setTimeout(() => {
+                    if(!scene) {
+                        init3DMap();
+                    } else {
+                        resize3DCanvas();
+                    }
+                }, 150);
+            }
+        }
+
+        // --- 4. LEAFLET 2D MAP & WAYFINDING PATHFINDER ---
+        let map2D;
+        let activeRoutePath = null;
+        const markers2D = {};
+
+        function init2DMap() {
+            if(map2D) return;
+
+            map2D = L.map('map').setView([26.448900, 80.192100], 17);
+
+            // Dark Vector Map Tiles
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+                maxZoom: 20,
+                attribution: '&copy; OpenStreetMap contributors &copy; CARTO'
+            }).addTo(map2D);
+
+            // Add Custom Markers
+            Object.keys(psitLocations).forEach(key => {
+                const loc = psitLocations[key];
+                const customIcon = L.divIcon({
+                    className: 'custom-cyber-pin',
+                    html: `<div>${loc.name}</div>`,
+                    iconSize: [110, 26],
+                    iconAnchor: [55, 13]
+                });
+
+                const marker = L.marker([loc.lat, loc.lng], { icon: customIcon }).addTo(map2D);
+                marker.bindPopup(`
+                    <div style="color:#000; font-family:sans-serif;">
+                        <strong style="color:#00f2fe">${loc.name}</strong><br>
+                        <small>${loc.desc}</small>
+                    </div>
+                `);
+                markers2D[key] = marker;
+            });
+        }
+
+        function flyToLoc(key) {
+            if(!map2D || !psitLocations[key]) return;
+            const loc = psitLocations[key];
+            map2D.flyTo([loc.lat, loc.lng], 18.5, { duration: 1.2 });
+            if(markers2D[key]) {
+                markers2D[key].openPopup();
+            }
+        }
+
+        // DRAW ROUTE WAYFINDING FUNCTION (WITH DOTTED LINE)
+        function drawCampusRoute(startKeyOverride, endKeyOverride) {
+            const startKey = startKeyOverride || document.getElementById('route-start').value;
+            const endKey = endKeyOverride || document.getElementById('route-end').value;
+
+            if (startKey === endKey) {
+                document.getElementById('route-info').innerHTML = `<span style="color:#ff2a85;">Start & Destination cannot be the same!</span>`;
+                return;
+            }
+
+            const startLoc = psitLocations[startKey];
+            const endLoc = psitLocations[endKey];
+
+            clearCampusRoute();
+
+            const distInMeters = getDistanceInMeters(startLoc.lat, startLoc.lng, endLoc.lat, endLoc.lng);
+            const walkTimeMins = Math.ceil(distInMeters / 70); 
+
+            const lawnLoc = psitLocations['lawn'];
+            const waypoints = [
+                [startLoc.lat, startLoc.lng],
+                [lawnLoc.lat, lawnLoc.lng],
+                [endLoc.lat, endLoc.lng]
+            ];
+
+            activeRoutePath = L.polyline(waypoints, {
+                color: '#00f2fe',
+                weight: 5,
+                opacity: 0.9,
+                dashArray: '8, 12',
+                lineCap: 'round'
+            }).addTo(map2D);
+
+            map2D.fitBounds(activeRoutePath.getBounds(), { padding: [40, 40] });
+
+            document.getElementById('route-info').innerHTML = `
+                📍 <strong>${startLoc.name}</strong> ➔ <strong>${endLoc.name}</strong> | 
+                🚶 ~${Math.round(distInMeters)}m (${walkTimeMins} min walk)
+            `;
+        }
+
+        function clearCampusRoute() {
+            if (activeRoutePath && map2D) {
+                map2D.removeLayer(activeRoutePath);
+                activeRoutePath = null;
+            }
+            document.getElementById('route-info').innerText = "Select start and end blocks to generate pathway.";
+        }
+
+        function getDistanceInMeters(lat1, lon1, lat2, lon2) {
+            const R = 6371e3; 
+            const φ1 = lat1 * Math.PI/180;
+            const φ2 = lat2 * Math.PI/180;
+            const Δφ = (lat2-lat1) * Math.PI/180;
+            const Δλ = (lon2-lon1) * Math.PI/180;
+
+            const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
+                      Math.cos(φ1) * Math.cos(φ2) *
+                      Math.sin(Δλ/2) * Math.sin(Δλ/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return R * c;
+        }
+
+        // --- 5. THREE.JS INTERACTIVE 3D BLUEPRINT (EXACT LAYOUT REBUILD) ---
+        let scene, camera, renderer, controls;
+        const interactiveBlocks = [];
+        const raycaster = new THREE.Raycaster();
+        const mouse = new THREE.Vector2();
+
+        function init3DMap() {
+            const container = document.getElementById('container-3d');
+            if (!container) return;
+
+            container.innerHTML = '';
+
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x05070a);
+            scene.fog = new THREE.FogExp2(0x05070a, 0.012);
+
+            const width = container.clientWidth || 800;
+            const height = container.clientHeight || 560;
+
+            camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
+            camera.position.set(0, 45, 50);
+
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(width, height);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.shadowMap.enabled = true;
+            
+            container.appendChild(renderer.domElement);
+
+            const OrbitControlsClass = THREE.OrbitControls || (window.THREE && window.THREE.OrbitControls);
+            if (OrbitControlsClass) {
+                controls = new OrbitControlsClass(camera, renderer.domElement);
+                controls.enableDamping = true;
+                controls.dampingFactor = 0.05;
+                controls.maxPolarAngle = Math.PI / 2 - 0.05;
+            }
+
+            // Lighting Setup
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.85);
+            scene.add(ambientLight);
+
+            const dirLight = new THREE.DirectionalLight(0x00f2fe, 1.3);
+            dirLight.position.set(20, 50, 30);
+            dirLight.castShadow = true;
+            scene.add(dirLight);
+
+            const pointLight = new THREE.PointLight(0xff2a85, 1.5, 60);
+            pointLight.position.set(0, 15, 0);
+            scene.add(pointLight);
+
+            // Cyber Grid Floor
+            const grid = new THREE.GridHelper(80, 40, 0x00f2fe, 0x1e293b);
+            grid.position.y = 0;
+            scene.add(grid);
+
+            // Build All 3D Blueprint Blocks Exactly like Image
+            Object.keys(psitLocations).forEach(key => {
+                const loc = psitLocations[key];
+                const geo = new THREE.BoxGeometry(loc.w, loc.height, loc.d);
+                
+                const mat = new THREE.MeshStandardMaterial({
+                    color: loc.color,
+                    roughness: 0.3,
+                    metalness: 0.7,
+                    emissive: 0x000000
+                });
+
+                const mesh = new THREE.Mesh(geo, mat);
+                mesh.position.set(loc.x, loc.height / 2, loc.z);
+                mesh.rotation.y = loc.rot;
+                mesh.castShadow = true;
+                mesh.receiveShadow = true;
+                mesh.userData = loc;
+
+                // Glowing Outline
+                const edges = new THREE.EdgesGeometry(geo);
+                const lineMat = new THREE.LineBasicMaterial({ color: 0x00f2fe });
+                const wireframe = new THREE.LineSegments(edges, lineMat);
+                mesh.add(wireframe);
+
+                scene.add(mesh);
+                interactiveBlocks.push(mesh);
+
+                // Sprite Text Label
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                canvas.width = 256;
+                canvas.height = 64;
+                ctx.fillStyle = '#00f2fe';
+                ctx.font = 'Bold 22px Segoe UI, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText(loc.name, 128, 40);
+
+                const texture = new THREE.CanvasTexture(canvas);
+                const spriteMat = new THREE.SpriteMaterial({ map: texture });
+                const sprite = new THREE.Sprite(spriteMat);
+                sprite.position.set(loc.x, loc.height + 2.5, loc.z);
+                sprite.scale.set(10, 2.5, 1);
+                scene.add(sprite);
+            });
+
+            // Interactive Raycasting Click
+            renderer.domElement.addEventListener('click', on3DBlockClick, false);
+            window.addEventListener('resize', resize3DCanvas);
+
+            animate3D();
+        }
+
+        function resize3DCanvas() {
+            const container = document.getElementById('container-3d');
+            if (!container || !renderer || !camera) return;
+            const width = container.clientWidth;
+            const height = container.clientHeight || 560;
+            
+            camera.aspect = width / height;
+            camera.updateProjectionMatrix();
+            renderer.setSize(width, height);
+        }
+
+        function animate3D() {
+            requestAnimationFrame(animate3D);
+            if (controls) controls.update();
+            if (renderer && scene && camera) renderer.render(scene, camera);
+        }
+
+        function on3DBlockClick(event) {
+            if(!renderer) return;
+            const rect = renderer.domElement.getBoundingClientRect();
+            mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+            mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObjects(interactiveBlocks);
+
+            if (intersects.length > 0) {
+                const clickedLoc = intersects[0].object.userData;
+                showBlockModal(clickedLoc);
+            }
+        }
+
+        function showBlockModal(loc) {
+            document.getElementById('card-block-title').innerHTML = `${loc.name} <i class="fa-solid fa-xmark" style="cursor:pointer; font-size:0.9rem;" onclick="closeBlockModal()"></i>`;
+            document.getElementById('card-block-desc').innerText = loc.desc;
+            document.getElementById('card-p12').innerText = loc.p12;
+            document.getElementById('card-p21').innerText = loc.p21;
+            document.getElementById('card-p31').innerText = loc.p31;
+
+            document.getElementById('block-info-card').classList.remove('hidden');
+        }
+
+        function closeBlockModal() {
+            document.getElementById('block-info-card').classList.add('hidden');
+        }
+
+        // --- 6. AI AGENT CHAT LOGIC ---
+        function sendNavMsg() {
+            const input = document.getElementById('input-nav');
+            const chatBox = document.getElementById('chat-nav');
+            const msg = input.value.trim();
+            if (!msg) return;
+
+            chatBox.innerHTML += `<div><strong style="color:var(--text-main)">You:</strong> ${msg}</div>`;
+            input.value = '';
+
+            const lowerMsg = msg.toLowerCase();
+
+            if (lowerMsg.includes('route') || lowerMsg.includes('way') || lowerMsg.includes('path') || lowerMsg.includes('to')) {
+                let startKey = 'blockA';
+                let endKey = 'blockJ';
+
+                if(lowerMsg.includes('tower')) endKey = 'tower';
+                else if(lowerMsg.includes('admin')) endKey = 'admin';
+
+                setTimeout(() => {
+                    chatBox.innerHTML += `<div><strong style="color:var(--accent-cyan)">PSIT-BOT:</strong> Generating wayfinding pathway on 2D map...</div>`;
+                    chatBox.scrollTop = chatBox.scrollHeight;
+
+                    switchTab('navigation', document.querySelectorAll('.sidebar-menu li')[1]);
+                    document.getElementById('route-start').value = startKey;
+                    document.getElementById('route-end').value = endKey;
+                    drawCampusRoute(startKey, endKey);
+                }, 500);
+                return;
+            }
+
+            let foundKey = null;
+            Object.keys(psitLocations).forEach(key => {
+                if (lowerMsg.includes(key.toLowerCase()) || lowerMsg.includes(psitLocations[key].name.toLowerCase())) {
+                    foundKey = key;
+                }
+            });
+
+            setTimeout(() => {
+                if (foundKey) {
+                    const loc = psitLocations[foundKey];
+                    chatBox.innerHTML += `<div><strong style="color:var(--accent-cyan)">PSIT-BOT:</strong> Located <strong>${loc.name}</strong>! Zooming in...</div>`;
+                    chatBox.scrollTop = chatBox.scrollHeight;
+                    
+                    switchTab('navigation', document.querySelectorAll('.sidebar-menu li')[1]);
+                    flyToLoc(foundKey);
+                } else {
+                    chatBox.innerHTML += `<div><strong style="color:var(--accent-cyan)">PSIT-BOT:</strong> Try asking 'Route from Block A to Block J' or 'Where is Block G'.</div>`;
+                    chatBox.scrollTop = chatBox.scrollHeight;
+                }
+            }, 500);
+        }
+    </script>
+</body>
+</html>
