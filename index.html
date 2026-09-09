@@ -575,7 +575,7 @@
                 <div style="display:flex; align-items:center; gap:10px;">
                     <strong>PSIT Campus Hub (Bhauti, Kanpur)</strong>
                     <span style="font-size:0.75rem; background:rgba(0, 242, 254, 0.1); color:var(--accent-cyan); border:1px solid rgba(0,242,254,0.3); padding:3px 8px; border-radius:12px;">
-                        ⚡ 3D Interactive Blueprint Active
+                        ⚡ Google Satellite Mode Active
                     </span>
                 </div>
                 <div class="user-card">
@@ -643,7 +643,7 @@
 
                 <!-- SECTION 2: ENHANCED HD 2D PSIT KANPUR MAP & WAYFINDER -->
                 <section id="sec-navigation" class="tab-section hidden">
-                    <h2 class="section-header">PSIT Kanpur - Interactive Wayfinding & Navigation</h2>
+                    <h2 class="section-header">PSIT Kanpur - Real Satellite Wayfinding & Navigation</h2>
 
                     <!-- ROUTE BUILDER TOOL BAR -->
                     <div class="route-builder">
@@ -847,7 +847,7 @@
             });
         }
 
-        // --- 2. COMPLETE PSIT BLUEPRINT DATASET (EXACT TO DIAGRAM) ---
+        // --- 2. EXACT PSIT CAMPUS COORDINATES & BLUEPRINT DATASET ---
         const psitLocations = {
             tower: { key: "tower", lat: 26.449700, lng: 80.192086, name: "PSIT Tower", desc: "Corporate & Public Relations Hub", p12: "p12 - PR Office & Visitor Lounge", p21: "p21 - Corporate Relations & Boardroom", p31: "p31 - Director Office & High-Tech Suites", x: 0, z: -20, w: 16, d: 8, rot: 0, color: 0x00f2fe, height: 7 },
             admin: { key: "admin", lat: 26.449450, lng: 80.192086, name: "Admin / Town Hall", desc: "Central Administrative Block", p12: "p12 - Student Registrar & Accounts counter", p21: "p21 - Main Town Hall Auditorium & Conference Room", p31: "p31 - Dean Academics & Controller Examination Cell", x: 0, z: -12, w: 14, d: 6, rot: 0, color: 0x4facfe, height: 4.5 },
@@ -861,7 +861,7 @@
             blockA: { key: "blockA", lat: 26.449000, lng: 80.191400, name: "Block A", desc: "Computer Science Wing", p12: "p12 - CSE Hardware Labs A12", p21: "p21 - Classrooms A21", p31: "p31 - AI Research Center A31", x: -17, z: 5, w: 7, d: 7, rot: 0, color: 0x4facfe, height: 4 },
             blockS: { key: "blockS", lat: 26.448600, lng: 80.191400, name: "Block S", desc: "Central Cafeteria & Food Court", p12: "p12 - Main Dining Hall S12", p21: "p21 - Nescafe & Express Lounge S21", p31: "p31 - Executive Dining Zone S31", x: -16, z: 14, w: 10, d: 7, rot: 0, color: 0x3b82f6, height: 4 },
 
-            // LEFT INNER ANGLED BLOCKS (Rotated 45 Deg)
+            // LEFT INNER ANGLED BLOCKS
             blockF: { key: "blockF", lat: 26.449300, lng: 80.191600, name: "Block F", desc: "Mechanical & CAD Labs", p12: "p12 - Auto CAD & Robotics Lab F12", p21: "p21 - Classrooms F21", p31: "p31 - Design Thinking Center F31", x: -9, z: -10, w: 6, d: 8, rot: Math.PI / 4, color: 0x00f2fe, height: 3.5 },
             blockD: { key: "blockD", lat: 26.449100, lng: 80.191600, name: "Block D", desc: "Electronics & Tech Labs", p12: "p12 - IoT & Embedded Systems Lab D12", p21: "p21 - Classrooms D21", p31: "p31 - Microprocessor Lab D31", x: -9, z: -2, w: 6, d: 8, rot: Math.PI / 4, color: 0x00f2fe, height: 3.5 },
             blockB: { key: "blockB", lat: 26.448800, lng: 80.191600, name: "Block B", desc: "Software Development Labs", p12: "p12 - Python & Java Coding Labs B12", p21: "p21 - Lecture Rooms B21", p31: "p31 - High-Performance Cloud Lab B31", x: -9, z: 6, w: 6, d: 8, rot: Math.PI / 4, color: 0x00f2fe, height: 3.5 },
@@ -873,7 +873,7 @@
             blockP: { key: "blockP", lat: 26.449000, lng: 80.192700, name: "Block P", desc: "First Year Engineering Wing", p12: "p12 - Applied Physics Lab P12", p21: "p21 - Classrooms P21", p31: "p31 - Engineering Graphics Lab P31", x: 17, z: 5, w: 7, d: 7, rot: 0, color: 0xa855f7, height: 4 },
             blockR: { key: "blockR", lat: 26.448600, lng: 80.192700, name: "Block R", desc: "Sports & Amenities Center", p12: "p12 - Indoor Badminton & Table Tennis R12", p21: "p21 - Gymnasium & Fitness Suite R21", p31: "p31 - Student Activity Club R31", x: 16, z: 14, w: 10, d: 7, rot: 0, color: 0x8b5cf6, height: 4 },
 
-            // RIGHT INNER ANGLED BLOCKS (Rotated -45 Deg)
+            // RIGHT INNER ANGLED BLOCKS
             blockL: { key: "blockL", lat: 26.449300, lng: 80.192500, name: "Block L", desc: "Advanced Computing Wing", p12: "p12 - Data Science Lab L12", p21: "p21 - Classrooms L21", p31: "p31 - Machine Learning Hub L31", x: 9, z: -10, w: 6, d: 8, rot: -Math.PI / 4, color: 0x00f2fe, height: 3.5 },
             blockN: { key: "blockN", lat: 26.449100, lng: 80.192500, name: "Block N", desc: "Civil & Structural Labs", p12: "p12 - Surveying & Material Lab N12", p21: "p21 - Classrooms N21", p31: "p31 - CAD Civil Lab N31", x: 9, z: -2, w: 6, d: 8, rot: -Math.PI / 4, color: 0x00f2fe, height: 3.5 },
             blockQ: { key: "blockQ", lat: 26.448800, lng: 80.192500, name: "Block Q", desc: "Tutorial & Workshop Block", p12: "p12 - Mechanical Workshop Q12", p21: "p21 - Tutorial Rooms Q21", p31: "p31 - Language Lab Q31", x: 9, z: 6, w: 6, d: 8, rot: -Math.PI / 4, color: 0x00f2fe, height: 3.5 }
@@ -942,7 +942,7 @@
             }
         }
 
-        // --- 4. LEAFLET 2D MAP & WAYFINDING PATHFINDER ---
+        // --- 4. LEAFLET 2D MAP WITH GOOGLE HYBRID SATELLITE TILES ---
         let map2D;
         let activeRoutePath = null;
         const markers2D = {};
@@ -950,15 +950,16 @@
         function init2DMap() {
             if(map2D) return;
 
-            map2D = L.map('map').setView([26.448900, 80.192100], 17);
+            // Centered on PSIT Kanpur Satellite coordinates
+            map2D = L.map('map').setView([26.449685, 80.191653], 18);
 
-            // Dark Vector Map Tiles
-            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+            // Google Hybrid Satellite Map Layer (NO API Key Watermark)
+            L.tileLayer('https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', {
                 maxZoom: 20,
-                attribution: '&copy; OpenStreetMap contributors &copy; CARTO'
+                attribution: '&copy; Google Maps Satellite'
             }).addTo(map2D);
 
-            // Add Custom Markers
+            // Add Custom Glowing Markers
             Object.keys(psitLocations).forEach(key => {
                 const loc = psitLocations[key];
                 const customIcon = L.divIcon({
@@ -982,13 +983,13 @@
         function flyToLoc(key) {
             if(!map2D || !psitLocations[key]) return;
             const loc = psitLocations[key];
-            map2D.flyTo([loc.lat, loc.lng], 18.5, { duration: 1.2 });
+            map2D.flyTo([loc.lat, loc.lng], 19, { duration: 1.2 });
             if(markers2D[key]) {
                 markers2D[key].openPopup();
             }
         }
 
-        // DRAW ROUTE WAYFINDING FUNCTION (WITH DOTTED LINE)
+        // DRAW ROUTE WAYFINDING FUNCTION (DOTTED LINE)
         function drawCampusRoute(startKeyOverride, endKeyOverride) {
             const startKey = startKeyOverride || document.getElementById('route-start').value;
             const endKey = endKeyOverride || document.getElementById('route-end').value;
@@ -1016,7 +1017,7 @@
             activeRoutePath = L.polyline(waypoints, {
                 color: '#00f2fe',
                 weight: 5,
-                opacity: 0.9,
+                opacity: 0.95,
                 dashArray: '8, 12',
                 lineCap: 'round'
             }).addTo(map2D);
@@ -1051,7 +1052,7 @@
             return R * c;
         }
 
-        // --- 5. THREE.JS INTERACTIVE 3D BLUEPRINT (EXACT LAYOUT REBUILD) ---
+        // --- 5. THREE.JS INTERACTIVE 3D BLUEPRINT ---
         let scene, camera, renderer, controls;
         const interactiveBlocks = [];
         const raycaster = new THREE.Raycaster();
@@ -1106,7 +1107,7 @@
             grid.position.y = 0;
             scene.add(grid);
 
-            // Build All 3D Blueprint Blocks Exactly like Image
+            // Build All 3D Blueprint Blocks
             Object.keys(psitLocations).forEach(key => {
                 const loc = psitLocations[key];
                 const geo = new THREE.BoxGeometry(loc.w, loc.height, loc.d);
