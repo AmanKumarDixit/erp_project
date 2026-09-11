@@ -15,6 +15,7 @@
             padding: 0;
             box-sizing: border-box;
             font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            -webkit-tap-highlight-color: transparent;
         }
 
         :root {
@@ -388,7 +389,7 @@
             border: 1px solid var(--card-border);
             overflow: hidden;
             position: relative;
-            background-color: #05070a !important; /* Cyber Black Canvas */
+            background-color: #05070a !important;
             background-image:
                 radial-gradient(rgba(0, 242, 254, 0.15) 1px, transparent 1px);
             background-size: 24px 24px;
@@ -401,6 +402,7 @@
             border: 1px solid var(--card-border);
             overflow: hidden;
             position: relative;
+            touch-action: none;
         }
 
         /* Custom Leaflet Map Pins */
@@ -423,7 +425,8 @@
             position: absolute;
             bottom: 25px;
             right: 25px;
-            width: 360px;
+            width: 320px;
+            max-width: calc(100% - 50px);
             background: rgba(8, 12, 22, 0.96);
             border: 1px solid var(--accent-cyan);
             border-radius: 12px;
@@ -432,13 +435,13 @@
             backdrop-filter: blur(16px);
             z-index: 1000;
             animation: fadeIn 0.3s ease-out;
-            max-height: 500px;
+            max-height: 450px;
             overflow-y: auto;
         }
 
         .block-img-preview {
             width: 100%;
-            height: 140px;
+            height: 130px;
             object-fit: cover;
             border-radius: 8px;
             border: 1px solid var(--card-border);
@@ -453,7 +456,7 @@
 
         .block-info-modal h3 {
             color: var(--accent-cyan);
-            font-size: 1.15rem;
+            font-size: 1.1rem;
             margin-bottom: 5px;
             display: flex;
             justify-content: space-between;
@@ -544,9 +547,15 @@
 
         @media(max-width: 850px) {
             .map-wrapper { grid-template-columns: 1fr; height: auto; }
-            #map, #container-3d { height: 400px; }
+            #map, #container-3d { height: 420px; }
             .dashboard-container { flex-direction: column; }
             .sidebar { width: 100%; }
+            .block-info-modal {
+                bottom: 10px;
+                right: 10px;
+                left: 10px;
+                width: auto;
+            }
         }
     </style>
 </head>
@@ -738,7 +747,7 @@
                     <div id="container-3d"></div>
 
                     <div style="position: absolute; top: 15px; left: 15px; background: rgba(0,0,0,0.85); padding: 10px 15px; border-radius: 8px; border: 1px solid var(--card-border); font-size: 0.8rem; pointer-events: none; z-index:10;">
-                        <i class="fa-solid fa-hand-pointer" style="color:var(--accent-cyan)"></i> <strong>Click on any 3D Block</strong> to view Floor Details (p12, p21, p31)
+                        <i class="fa-solid fa-hand-pointer" style="color:var(--accent-cyan)"></i> <strong>Tap on any 3D Block</strong> to view details
                     </div>
 
                     <!-- Dynamic Clicked Block Info Panel -->
@@ -796,7 +805,7 @@
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 
 <script>
-    // --- UNCHANGED ORIGINAL AUTHORIZED USER DATABASE & AUTH LOGIC ---
+    // --- AUTHORIZED USER DATABASE (Original Logic Unchanged) ---
     const authorizedUsers = {
         "PSIT2026101": "psit@123",
         "PSIT2026102": "admin123",
@@ -904,7 +913,7 @@
     }
 
     // --- 2. EXACT CAMPUS COORDINATES & BLUEPRINT DATASET WITH IMAGES ---
-    const campusLocations = {
+    const psitLocations = {
         tower: { key: "tower", lat: 26.449700, lng: 80.192086, name: "CAMPUS Tower", desc: "Corporate & Public Relations Hub", img: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=500&auto=format&fit=crop&q=80", p12: "p12 - PR Office & Visitor Lounge", p21: "p21 - Corporate Relations & Boardroom", p31: "p31 - Director Office & High-Tech Suites", x: 0, z: -20, w: 16, d: 8, rot: 0, color: 0x00f2fe, height: 7 },
         admin: { key: "admin", lat: 26.449450, lng: 80.192086, name: "Admin / Town Hall", desc: "Central Administrative Block", img: "https://images.unsplash.com/photo-1541829070764-84a7d30dd3f3?w=500&auto=format&fit=crop&q=80", p12: "p12 - Student Registrar & Accounts counter", p21: "p21 - Main Town Hall Auditorium & Conference Room", p31: "p31 - Dean Academics & Controller Examination Cell", x: 0, z: -12, w: 14, d: 6, rot: 0, color: 0x4facfe, height: 4.5 },
         lawn: { key: "lawn", lat: 26.449000, lng: 80.192086, name: "Central Green Lawn", desc: "Main Campus Assembly Ground", img: "https://images.unsplash.com/photo-1589828996213-56e201216856?w=500&auto=format&fit=crop&q=80", p12: "p12 - Open Amphitheatre Lawn & Assembly Ground", p21: "N/A", p31: "N/A", x: 0, z: 2, w: 10, d: 18, rot: 0, color: 0x10b981, height: 0.2 },
@@ -946,8 +955,8 @@
         endSelect.innerHTML = '';
         if(list2D) list2D.innerHTML = '';
 
-        Object.keys(campusLocations).forEach((key, index) => {
-            const loc = campusLocations[key];
+        Object.keys(psitLocations).forEach((key, index) => {
+            const loc = psitLocations[key];
             startSelect.innerHTML += `<option value="${key}">${loc.name}</option>`;
             endSelect.innerHTML += `<option value="${key}" ${index === 5 ? 'selected' : ''}>${loc.name}</option>`;
 
@@ -961,7 +970,7 @@
         });
     }
 
-    // --- 3. ORIGINAL AUTHENTICATION LOGIC ---
+    // --- 3. AUTHENTICATION & NAVIGATION LOGIC ---
     function login() {
         const inputId = document.getElementById('login-id').value.trim();
         const inputPass = document.getElementById('login-pass').value.trim();
@@ -1009,7 +1018,7 @@
         }
     }
 
-    // --- 4. LEAFLET 2D VECTOR BLUEPRINT MAP (MAP TILES REMOVED) ---
+    // --- 4. LEAFLET 2D VECTOR BLUEPRINT MAP ---
     let map2D;
     let activeRoutePath = null;
     const markers2D = {};
@@ -1017,15 +1026,13 @@
     function init2DMap() {
         if(map2D) return;
 
-        // Vector Canvas Map centered on campus coordinates (No Tile Layer)
         map2D = L.map('map', {
             zoomControl: true,
             attributionControl: false
         }).setView([26.449100, 80.192086], 18);
 
-        // Add Custom Glowing Markers with Click Handlers for Images
-        Object.keys(campusLocations).forEach(key => {
-            const loc = campusLocations[key];
+        Object.keys(psitLocations).forEach(key => {
+            const loc = psitLocations[key];
             const customIcon = L.divIcon({
                 className: 'custom-cyber-pin',
                 html: `<div>${loc.name}</div>`,
@@ -1042,8 +1049,8 @@
     }
 
     function flyToLoc(key) {
-        if(!map2D || !campusLocations[key]) return;
-        const loc = campusLocations[key];
+        if(!map2D || !psitLocations[key]) return;
+        const loc = psitLocations[key];
         map2D.flyTo([loc.lat, loc.lng], 19, { duration: 1.2 });
         showBlockModal2D(loc);
     }
@@ -1073,15 +1080,15 @@
             return;
         }
 
-        const startLoc = campusLocations[startKey];
-        const endLoc = campusLocations[endKey];
+        const startLoc = psitLocations[startKey];
+        const endLoc = psitLocations[endKey];
 
         clearCampusRoute();
 
         const distInMeters = getDistanceInMeters(startLoc.lat, startLoc.lng, endLoc.lat, endLoc.lng);
         const walkTimeMins = Math.ceil(distInMeters / 70);
 
-        const lawnLoc = campusLocations['lawn'];
+        const lawnLoc = psitLocations['lawn'];
         const waypoints = [
             [startLoc.lat, startLoc.lng],
             [lawnLoc.lat, lawnLoc.lng],
@@ -1131,6 +1138,8 @@
     const interactiveBlocks = [];
     const raycaster = new THREE.Raycaster();
     const mouse = new THREE.Vector2();
+
+    let pointerDownPos = { x: 0, y: 0 };
 
     function init3DMap() {
         const container = document.getElementById('container-3d');
@@ -1182,8 +1191,8 @@
         scene.add(grid);
 
         // Build All 3D Blueprint Blocks
-        Object.keys(campusLocations).forEach(key => {
-            const loc = campusLocations[key];
+        Object.keys(psitLocations).forEach(key => {
+            const loc = psitLocations[key];
             const geo = new THREE.BoxGeometry(loc.w, loc.height, loc.d);
 
             const mat = new THREE.MeshStandardMaterial({
@@ -1227,8 +1236,11 @@
             scene.add(sprite);
         });
 
-        // Interactive Raycasting Click
-        renderer.domElement.addEventListener('click', on3DBlockClick, false);
+        renderer.domElement.addEventListener('pointerdown', (e) => {
+            pointerDownPos = { x: e.clientX, y: e.clientY };
+        }, false);
+
+        renderer.domElement.addEventListener('pointerup', on3DPointerUp, false);
         window.addEventListener('resize', resize3DCanvas);
 
         animate3D();
@@ -1251,8 +1263,12 @@
         if (renderer && scene && camera) renderer.render(scene, camera);
     }
 
-    function on3DBlockClick(event) {
-        if(!renderer) return;
+    function on3DPointerUp(event) {
+        if (!renderer) return;
+
+        const moveDist = Math.hypot(event.clientX - pointerDownPos.x, event.clientY - pointerDownPos.y);
+        if (moveDist > 8) return;
+
         const rect = renderer.domElement.getBoundingClientRect();
         mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
         mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
@@ -1313,15 +1329,15 @@
         }
 
         let foundKey = null;
-        Object.keys(campusLocations).forEach(key => {
-            if (lowerMsg.includes(key.toLowerCase()) || lowerMsg.includes(campusLocations[key].name.toLowerCase())) {
+        Object.keys(psitLocations).forEach(key => {
+            if (lowerMsg.includes(key.toLowerCase()) || lowerMsg.includes(psitLocations[key].name.toLowerCase())) {
                 foundKey = key;
             }
         });
 
         setTimeout(() => {
             if (foundKey) {
-                const loc = campusLocations[foundKey];
+                const loc = psitLocations[foundKey];
                 chatBox.innerHTML += `<div><strong style="color:var(--accent-cyan)">COLLEGE-BOT:</strong> Located <strong>${loc.name}</strong>! Zooming in...</div>`;
                 chatBox.scrollTop = chatBox.scrollHeight;
 
