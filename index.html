@@ -565,11 +565,11 @@
 <div id="login-portal" class="login-wrapper">
     <div class="login-card">
         <div class="brand-title">CAMPUS MIND</div>
-        <p style="color:var(--text-muted); margin-bottom:25px; font-size: 0.9rem;">Pranveer Singh Institute of Technology</p>
+        <p style="color:var(--text-muted); margin-bottom:25px; font-size: 0.9rem;">Campus Mind ERP Portal</p>
         <form id="login-form" onsubmit="event.preventDefault(); login();">
             <div class="form-group">
                 <label>Registration ID / Roll No</label>
-                <input type="text" id="login-id" placeholder="e.g. PSIT2026102" required>
+                <input type="text" id="login-id" placeholder="e.g. CAMPUS2026102" required>
             </div>
             <div class="form-group">
                 <label>Password</label>
@@ -805,8 +805,13 @@
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 
 <script>
-    // --- AUTHORIZED USER DATABASE (Original Logic Unchanged) ---
+    // --- AUTHORIZED USER DATABASE (Updated to CAMPUS format) ---
     const authorizedUsers = {
+        "CAMPUS2026101": "campus@123",
+        "CAMPUS2026102": "admin123",
+        "CAMPUS2026103": "student@2026",
+        "CAMPUS2026104": "pass1234",
+        // Backward compatibility for PSIT credentials
         "PSIT2026101": "psit@123",
         "PSIT2026102": "admin123",
         "PSIT2026103": "student@2026",
@@ -913,7 +918,7 @@
     }
 
     // --- 2. EXACT CAMPUS COORDINATES & BLUEPRINT DATASET WITH IMAGES ---
-    const psitLocations = {
+    const campusLocations = {
         tower: { key: "tower", lat: 26.449700, lng: 80.192086, name: "CAMPUS Tower", desc: "Corporate & Public Relations Hub", img: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=500&auto=format&fit=crop&q=80", p12: "p12 - PR Office & Visitor Lounge", p21: "p21 - Corporate Relations & Boardroom", p31: "p31 - Director Office & High-Tech Suites", x: 0, z: -20, w: 16, d: 8, rot: 0, color: 0x00f2fe, height: 7 },
         admin: { key: "admin", lat: 26.449450, lng: 80.192086, name: "Admin / Town Hall", desc: "Central Administrative Block", img: "https://images.unsplash.com/photo-1541829070764-84a7d30dd3f3?w=500&auto=format&fit=crop&q=80", p12: "p12 - Student Registrar & Accounts counter", p21: "p21 - Main Town Hall Auditorium & Conference Room", p31: "p31 - Dean Academics & Controller Examination Cell", x: 0, z: -12, w: 14, d: 6, rot: 0, color: 0x4facfe, height: 4.5 },
         lawn: { key: "lawn", lat: 26.449000, lng: 80.192086, name: "Central Green Lawn", desc: "Main Campus Assembly Ground", img: "https://images.unsplash.com/photo-1589828996213-56e201216856?w=500&auto=format&fit=crop&q=80", p12: "p12 - Open Amphitheatre Lawn & Assembly Ground", p21: "N/A", p31: "N/A", x: 0, z: 2, w: 10, d: 18, rot: 0, color: 0x10b981, height: 0.2 },
@@ -955,8 +960,8 @@
         endSelect.innerHTML = '';
         if(list2D) list2D.innerHTML = '';
 
-        Object.keys(psitLocations).forEach((key, index) => {
-            const loc = psitLocations[key];
+        Object.keys(campusLocations).forEach((key, index) => {
+            const loc = campusLocations[key];
             startSelect.innerHTML += `<option value="${key}">${loc.name}</option>`;
             endSelect.innerHTML += `<option value="${key}" ${index === 5 ? 'selected' : ''}>${loc.name}</option>`;
 
@@ -1031,8 +1036,8 @@
             attributionControl: false
         }).setView([26.449100, 80.192086], 18);
 
-        Object.keys(psitLocations).forEach(key => {
-            const loc = psitLocations[key];
+        Object.keys(campusLocations).forEach(key => {
+            const loc = campusLocations[key];
             const customIcon = L.divIcon({
                 className: 'custom-cyber-pin',
                 html: `<div>${loc.name}</div>`,
@@ -1049,8 +1054,8 @@
     }
 
     function flyToLoc(key) {
-        if(!map2D || !psitLocations[key]) return;
-        const loc = psitLocations[key];
+        if(!map2D || !campusLocations[key]) return;
+        const loc = campusLocations[key];
         map2D.flyTo([loc.lat, loc.lng], 19, { duration: 1.2 });
         showBlockModal2D(loc);
     }
@@ -1080,15 +1085,15 @@
             return;
         }
 
-        const startLoc = psitLocations[startKey];
-        const endLoc = psitLocations[endKey];
+        const startLoc = campusLocations[startKey];
+        const endLoc = campusLocations[endKey];
 
         clearCampusRoute();
 
         const distInMeters = getDistanceInMeters(startLoc.lat, startLoc.lng, endLoc.lat, endLoc.lng);
         const walkTimeMins = Math.ceil(distInMeters / 70);
 
-        const lawnLoc = psitLocations['lawn'];
+        const lawnLoc = campusLocations['lawn'];
         const waypoints = [
             [startLoc.lat, startLoc.lng],
             [lawnLoc.lat, lawnLoc.lng],
@@ -1191,8 +1196,8 @@
         scene.add(grid);
 
         // Build All 3D Blueprint Blocks
-        Object.keys(psitLocations).forEach(key => {
-            const loc = psitLocations[key];
+        Object.keys(campusLocations).forEach(key => {
+            const loc = campusLocations[key];
             const geo = new THREE.BoxGeometry(loc.w, loc.height, loc.d);
 
             const mat = new THREE.MeshStandardMaterial({
@@ -1329,15 +1334,15 @@
         }
 
         let foundKey = null;
-        Object.keys(psitLocations).forEach(key => {
-            if (lowerMsg.includes(key.toLowerCase()) || lowerMsg.includes(psitLocations[key].name.toLowerCase())) {
+        Object.keys(campusLocations).forEach(key => {
+            if (lowerMsg.includes(key.toLowerCase()) || lowerMsg.includes(campusLocations[key].name.toLowerCase())) {
                 foundKey = key;
             }
         });
 
         setTimeout(() => {
             if (foundKey) {
-                const loc = psitLocations[foundKey];
+                const loc = campusLocations[foundKey];
                 chatBox.innerHTML += `<div><strong style="color:var(--accent-cyan)">COLLEGE-BOT:</strong> Located <strong>${loc.name}</strong>! Zooming in...</div>`;
                 chatBox.scrollTop = chatBox.scrollHeight;
 
